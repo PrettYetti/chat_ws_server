@@ -1,43 +1,63 @@
+//create web socket server
 var WebSocketServer = require("ws").Server;
 var server = new WebSocketServer({port: 2000});
-var messagelog = [];
-var clientlog = [];
+
+//create clientLog:
+var clientLog = [];
+
+//create messageLog:
+var messageLog = [];
+
+//create message constructor:
+var message = function(user,msg,type) {
+  this.user = user;
+  this.msg = msg;
+  this.type = type;
+}
 
 server.on("connection", function(client) {
 
-  console.log("client connected");
-
   //send connected message to client
-  client.send(JSON.stringify("connected to chatroom"));
+  var connectionMessage = new message("server", "You are connected to chatroom", "welcome");
+  console.log(connectionMessage);
+  client.send(JSON.stringify(connectionMessage));
+
+  //ensure only most recent 50 messages are kept in message log
+  if (messageLog.length > 50) {
+    messageLog.shift();
+  }
 
   //send message history to connected clients
-  messagelog.forEach(function(elem) {
+  messageLog.forEach(function(elem) {
     client.send(elem);
   });
 
-  clientlog.push(client);
+  clientLog.push(client);
 
-  //capture client messages and push to messagelog
+  //capture client messages and push to messageLog
   client.on("message", function(input) {
     //parse message
     var message = JSON.parse(input);
-    messagelog.push(input);
-    console.log(input);
 
-    //send messages to all connected clients
-    clientlog.forEach(function(elem) {
-      elem.send(input);
-    })
+    if (message.type === "clientMsg") {
+      messageLog.push(input);
+
+      //send messages to all connected clients
+      clientLog.forEach(function(elem) {
+        elem.send(input)
+      });
+    }
+
   });
 
   //remove clients on close
   client.on("close", function(input) {
     console.log("client disconnected");
-    //remove from clientlog
-    clientlog.forEach(function(elem) {
+    //remove from clientLog
+    clientLog.forEach(function(elem) {
       if (elem === client) {
-        var removeClient = clientlog.indexOf(client);
-        clientlog.splice(removeClient, 1);
+        var removeClient = clientLog.indexOf(client);
+        clientLog.splice(removeClient, 1);
         elem.close();
       }
     });
