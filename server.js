@@ -6,7 +6,7 @@ var server = new WebSocketServer({port: 2000});
 var clientLog = [];
 
 //create messageLog:
-var messageLog = [];
+// var messageLog = [];
 
 //create message constructor:
 var message = function(user,msg,type) {
@@ -23,14 +23,14 @@ server.on("connection", function(client) {
   client.send(JSON.stringify(connectionMessage));
 
   //ensure only most recent 50 messages are kept in message log
-  if (messageLog.length > 50) {
-    messageLog.shift();
-  }
+  // if (messageLog.length > 50) {
+  //   messageLog.shift();
+  // }
 
   //send message history to connected clients
-  messageLog.forEach(function(elem) {
-    client.send(elem);
-  });
+  // messageLog.forEach(function(elem) {
+  //   client.send(elem);
+  // });
 
   clientLog.push(client);
 
@@ -40,7 +40,7 @@ server.on("connection", function(client) {
     var message = JSON.parse(input);
 
     if (message.type === "clientMsg") {
-      messageLog.push(input);
+      // messageLog.push(input);
 
       //send messages to all connected clients
       clientLog.forEach(function(elem) {
